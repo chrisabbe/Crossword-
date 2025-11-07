@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>storage relay</title></head>
+<body>
+<script>
+/* Acts as a same-origin localStorage relay for cross-embed persistence */
+window.addEventListener('message', (e)=>{
+  if(e.origin !== location.origin) return;
+  const {type,key,value} = e.data || {};
+  if(!key) return;
+  if(type==='get'){
+    let v=null;
+    try{v=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
+    e.source.postMessage({key,value:v}, e.origin);
+  }
+  if(type==='set'){
+    try{localStorage.setItem(key, JSON.stringify(value));}catch(_){}
+    e.source.postMessage({key,value:true}, e.origin);
+  }
+  if(type==='del'){
+    try{localStorage.removeItem(key);}catch(_){}
+    e.source.postMessage({key,value:true}, e.origin);
+  }
+});
+</script>
+</body>
+</html>
